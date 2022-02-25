@@ -2,38 +2,43 @@ import numpy as np
 import pandas as pd
 #create custom function to integrate into pipeline
 
-#to replace nans with custome values
-def nanreplace(data):
-    #define replacement values and columns with null
-    replace_value = ['Male', 'No', 0, 'No', 146.412162, 360, 1] 
-    null_col = data.columns[data.isnull().any()]
-    
-    for i, col in enumerate(null_col):
-            data[col] = data[col].fillna(replace_value[i])
-            
-    return data
-
-#one to drop id col
+#drop id column
 def dropID(data):
     
     return data.drop(['Loan_ID'], axis=1)
 
+
+def impute(data):
+    keys = ['Gender', 'Married', 'Dependents', 'Education',
+       'Self_Employed', 'ApplicantIncome', 'CoapplicantIncome', 'LoanAmount',
+       'Loan_Amount_Term', 'Credit_History', 'Property_Area']
+    values = ['Male', 'No', 0, 'Graduate', 'No', 3812, 146.412162, 146, 360, 1, 'Urban'] 
+    replace = dict(zip(keys, values))
+    
+    for col in data.columns:
+            data[col] = data[col].fillna(replace[col])
+         
+    return data
+    
+    
 #two for seperating out cat and int datatypes
 def numFeat(data):
     #highlight the three numeric columns
     num_data = data[['LoanAmount', 'ApplicantIncome', 'CoapplicantIncome']]
-    #coerce them back into numeric if they became objects
     num_data = num_data.apply(pd.to_numeric, errors='coerce')
     
     return num_data
 
 def catFeat(data):
+     #highlight the cat columns
+    cat_data = data[['Gender', 'Married', 'Dependents', 'Education',
+       'Self_Employed', 'Property_Area']]
      #only return data with columns that have object dtype
-    return data[data.columns[data.dtypes == 'object']]
+    return cat_data
 
 
 def log_transform(data):
-    #print(data)
+    
     log_amount = np.log(data['LoanAmount'])
     log_income = np.log(data['ApplicantIncome'] + data['CoapplicantIncome'])
 
@@ -48,7 +53,7 @@ def log_transform(data):
 def cat_transform(data):
     #fix Dependents
     data['Dependents'] = data['Dependents'].replace({'3+': 3})
-
+    
     #convert into numeric
     data['Dependents'] = data['Dependents'].apply(pd.to_numeric, errors='coerce')
     
