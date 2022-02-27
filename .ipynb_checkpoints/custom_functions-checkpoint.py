@@ -6,20 +6,6 @@ import pandas as pd
 def dropID(data):
     
     return data.drop(['Loan_ID'], axis=1)
-
-
-def impute(data):
-    keys = ['Gender', 'Married', 'Dependents', 'Education',
-       'Self_Employed', 'ApplicantIncome', 'CoapplicantIncome', 'LoanAmount',
-       'Loan_Amount_Term', 'Credit_History', 'Property_Area']
-    values = ['Male', 'No', 0, 'Graduate', 'No', 3812, 146.412162, 146, 360, 1, 'Urban'] 
-    replace = dict(zip(keys, values))
-    
-    for col in data.columns:
-            data[col] = data[col].fillna(replace[col])
-         
-    return data
-    
     
 #two for seperating out cat and int datatypes
 def numFeat(data):
@@ -52,10 +38,10 @@ def log_transform(data):
 #categorical transformation step
 def cat_transform(data):
     #fix Dependents
-    data['Dependents'] = data['Dependents'].replace({'3+': 3})
+    data['Dependents'] = data['Dependents'].replace({'1': 1, '2': 2, '3+': 3})
     
     #convert into numeric
-    data['Dependents'] = data['Dependents'].apply(pd.to_numeric, errors='coerce')
+    #data['Dependents'] = data['Dependents'].apply(pd.to_numeric, errors='coerce')
     
     #create list of columns to convert to dummies
     for_dummy = ['Gender', 'Married', 'Education', 'Self_Employed', 'Property_Area']

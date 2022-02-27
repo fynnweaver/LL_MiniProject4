@@ -11,7 +11,7 @@ app = Flask(__name__)
 api = Api(app)
 
 #our model needs access to our custom functions
-from custom_functions import impute, dropID, numFeat, catFeat, log_transform, cat_transform
+from custom_functions import dropID, numFeat, catFeat, log_transform, cat_transform
 
 #load model
 model = pickle.load(open('loan_model.sav', 'rb'))
@@ -23,12 +23,15 @@ class loan_predict(Resource):
         #transform data posted into a dataframe
         json_data = request.get_json()
         df = pd.DataFrame(json_data.values(), index=json_data.keys()).transpose()
-        
+        print(df)
         #getting predictions from the model using our pipeline
-        res = model.predict_proba(df)
+        predicted_proba = model.predict_proba(df)
+        #set custom threshold
+        predicted = (predicted_proba[:,1] >= 0.4).astype('int')
+        
         
         #translate res to a list and return (can't return np arrays)
-        return res.tolist()
+        return predicted.tolist()
     
     def get(self):
          #create request parser
@@ -56,9 +59,11 @@ class loan_predict(Resource):
                 input_values[col] = np.nan
         
         df = pd.DataFrame(input_values.values(), index=input_values.keys()).T
-        res = model.predict_proba(df)
+    
+        predicted_proba = model.predict_proba(df)
+        predicted = (predicted_proba [:,1] >= 0.4).astype('int')
         
-        return res.tolist()
+        return predicted.tolist()
         
         
     
